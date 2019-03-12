@@ -1,0 +1,28 @@
+{
+  "name": "hashedge-pro-contract",
+  "version": "0.0.1",
+  "description": "hashedge-pro's smart contract",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carboclan/hashedge-pro-contract.git"
+  },
+  "keywords": [
+    "hashedge"
+  ],
+  "author": "tal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/carboclan/hashedge-pro-contract/issues"
+  },
+  "homepage": "https://github.com/carboclan/hashedge-pro-contract#readme",
+  "dependencies": {
+    "truffle-hdwallet-provider": "^1.0.5",
+    "zeppelin-solidity": "^1.12.0"
+  }
+}
