@@ -1,11 +1,12 @@
 pragma solidity >=0.4.21 <0.6.0;
 
+import "zeppelin-solidity/contracts/access/Whitelist.sol";
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "zeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
-contract BtcSwapToken is ERC721 {
+contract BtcSwapToken is ERC721, Whitelist {
   struct OracleData {
-    uint256 ts;
+    uint64 ts;
     uint256 profitPerThDay;
   }
 
@@ -30,6 +31,32 @@ contract BtcSwapToken is ERC721 {
   constructor(address fixedLegToken_, address floatingLegToken_) public {
     fixedLegToken = ERC20(fixedLegToken_);
     floatingLegToken = ERC20(floatingLegToken_);
+  }
+
+  function setProfitOracle(uint64 _ts, uint64 _profit) public onlyOwner {
+    require(_ts > now - 24 * 3600 * 14 && _ts < now);
+    require(_ts > oracle[oracle.length - 1].ts);
+
+    oracle.push(OracleData(_ts, _profit));
+  }
+
+  function issueNewContract(uint256 _size, uint256 _count) public onlyIfWhitelisted(msg.sender) {
+    require(oracle.length > 0);
+
+    Contract memory c = Contract(
+      true,
+      msg.sender,
+      address(0),
+      _size,
+      0,
+      0,
+      0
+    );
+
+    for (uint256 i = 0; i < _count; i++) {
+      addressToCount[msg.sender]++;
+      contracts.push(c);
+    }
   }
 
   function name() external view returns (string _name) {
