@@ -40,7 +40,7 @@ contract BtcSwapToken is ERC721, Whitelist {
     oracle.push(OracleData(_ts, _profit));
   }
 
-  function issueNewContract(uint256 _size, uint256 _count) public onlyIfWhitelisted(msg.sender) {
+  function issueNewContract(uint256 _size, uint64 _duration, uint256 _count) public onlyIfWhitelisted(msg.sender) {
     require(oracle.length > 0);
 
     Contract memory c = Contract(
@@ -49,7 +49,7 @@ contract BtcSwapToken is ERC721, Whitelist {
       address(0),
       _size,
       0,
-      0,
+      _duration,
       0
     );
 
