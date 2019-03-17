@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.5.0;
 
 import "openzeppelin-solidity/contracts/access/roles/WhitelistedRole.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
@@ -70,10 +70,6 @@ contract BtcSwapToken is ERC721, WhitelistedRole {
   function tokenURI(uint256) public pure returns (string memory) {
     return "";
   }
-
-//  function supportsInterface(bytes4 _interfaceId) external view returns (bool) {
-//    return _interfaceId == InterfaceId_ERC721;
-//  }
 
   function implementsERC721() public pure returns (bool) {
     return true;
