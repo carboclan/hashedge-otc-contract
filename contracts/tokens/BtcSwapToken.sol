@@ -1,10 +1,10 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "zeppelin-solidity/contracts/access/Whitelist.sol";
-import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "zeppelin-solidity/contracts/token/ERC721/ERC721.sol";
+import "openzeppelin-solidity/contracts/access/roles/WhitelistedRole.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
-contract BtcSwapToken is ERC721, Whitelist {
+contract BtcSwapToken is ERC721, WhitelistedRole {
   struct OracleData {
     uint64 ts;
     uint256 profitPerThDay;
@@ -33,14 +33,14 @@ contract BtcSwapToken is ERC721, Whitelist {
     floatingLegToken = ERC20(floatingLegToken_);
   }
 
-  function setProfitOracle(uint64 _ts, uint64 _profit) public onlyOwner {
+  function setProfitOracle(uint64 _ts, uint64 _profit) public onlyWhitelistAdmin {
     require(_ts > now - 24 * 3600 * 14 && _ts < now);
     require(_ts > oracle[oracle.length - 1].ts);
 
     oracle.push(OracleData(_ts, _profit));
   }
 
-  function issueNewContract(uint256 _size, uint64 _duration, uint256 _count) public onlyIfWhitelisted(msg.sender) {
+  function issueNewContract(uint256 _size, uint64 _duration, uint256 _count) public onlyWhitelisted {
     require(oracle.length > 0);
 
     Contract memory c = Contract(
@@ -59,21 +59,21 @@ contract BtcSwapToken is ERC721, Whitelist {
     }
   }
 
-  function name() external view returns (string _name) {
+  function name() external pure returns (string memory) {
     return "BTC SWAP TOKEN";
   }
 
-  function symbol() external view returns (string _symbol) {
+  function symbol() external pure returns (string memory) {
     return "BTCSWAP";
   }
 
-  function tokenURI(uint256) public view returns (string) {
+  function tokenURI(uint256) public pure returns (string memory) {
     return "";
   }
 
-  function supportsInterface(bytes4 _interfaceId) external view returns (bool) {
-    return _interfaceId == InterfaceId_ERC721;
-  }
+//  function supportsInterface(bytes4 _interfaceId) external view returns (bool) {
+//    return _interfaceId == InterfaceId_ERC721;
+//  }
 
   function implementsERC721() public pure returns (bool) {
     return true;
@@ -83,11 +83,11 @@ contract BtcSwapToken is ERC721, Whitelist {
     total = contracts.length - 1;
   }
 
-  function tokenOfOwnerByIndex(address, uint256) public view returns (uint256 _tokenId) {
+  function tokenOfOwnerByIndex(address, uint256) public pure returns (uint256 _tokenId) {
     return 0; // not needed.
   }
 
-  function tokenByIndex(uint256 _index) public view returns (uint256) {
+  function tokenByIndex(uint256 _index) public pure returns (uint256) {
     return _index;
   }
 
@@ -99,7 +99,7 @@ contract BtcSwapToken is ERC721, Whitelist {
     _balance = addressToCount[_owner];
   }
 
-  function exists(uint256 _tokenId) public view returns (bool _exists) {
+  function exists(uint256 _tokenId) public view returns (bool) {
     return contracts[_tokenId].exists;
   }
 
@@ -138,7 +138,7 @@ contract BtcSwapToken is ERC721, Whitelist {
     address,
     address,
     uint256,
-    bytes
+    bytes memory
   )
   public {
     revert();
@@ -152,11 +152,11 @@ contract BtcSwapToken is ERC721, Whitelist {
     _transfer(msg.sender, _to, _tokenId);
   }
 
-  function contractUnit() public pure returns (string) {
+  function contractUnit() public pure returns (string memory) {
     return "GH/s";
   }
 
-  function contractType() public pure returns (string) {
+  function contractType() public pure returns (string memory) {
     return "PoW";
   }
 
