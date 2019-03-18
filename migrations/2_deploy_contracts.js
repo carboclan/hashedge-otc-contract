@@ -1,7 +1,7 @@
-const BtcSwapToken = artifacts.require('./tokens/BtcSwapToken.sol');
+const BtcSwap721 = artifacts.require('./tokens/Swap721.sol');
 
 module.exports = async function(deployer) {
   deployer.then(async () => {
-    await deployer.deploy(BtcSwapToken, "0x0", "0x0");
+    await deployer.deploy(BtcSwap721);
   });
 };
