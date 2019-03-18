@@ -1,13 +1,11 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
 
-contract Swap721 is ERC721 {
-  struct OracleData {
-    uint64 ts;
-    uint256 profitPerThDay;
-  }
+import "./Oracle.sol";
+import "./Collateral.sol";
 
+contract Swap721 is ERC721Metadata {
   struct Contract {
     bool    terminated;
     address issuer;
@@ -17,10 +15,24 @@ contract Swap721 is ERC721 {
     uint64  lastSettleTime;
   }
 
-  OracleData[] oracle;
-  Contract[] contracts;
+  string public contractUnit;
+  Contract[] _contracts;
 
-  constructor() public {
+  Oracle _oracle;
+  IERC20 _fixLegToken;
+  Collateral _floatingLegCollateral;
 
+  constructor(
+    string memory name,
+    string memory symbol,
+    string memory unit,
+    address oracle,
+    address fixLegToken,
+    address collateral)
+  public ERC721Metadata(name, symbol) {
+    contractUnit = unit;
+    _oracle = Oracle(oracle);
+    _fixLegToken = IERC20(fixLegToken);
+    _floatingLegCollateral = Collateral(collateral);
   }
 }
