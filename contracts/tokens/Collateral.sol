@@ -13,7 +13,7 @@ contract Collateral {
   mapping(address => info) _accountInfo;
 
   constructor(address erc20Addr) public {
-    _underlying = ERC20(erc20Addr);
+    _underlying = IERC20(erc20Addr);
   }
 
   function deposit(uint256 value) public {
@@ -25,7 +25,7 @@ contract Collateral {
     info storage inf = _accountInfo[msg.sender];
     require(value <= inf.balance - inf.margin);
 
-    info.balance -= value;
+    inf.balance -= value;
     _underlying.transfer(msg.sender, value);
   }
 }
