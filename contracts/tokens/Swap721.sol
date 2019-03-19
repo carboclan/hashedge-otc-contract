@@ -15,6 +15,7 @@ contract Swap721 is ERC721Metadata {
     uint64  lastSettleTime;
   }
 
+  string public contractType;
   string public contractUnit;
   Contract[] _contracts;
 
@@ -26,11 +27,14 @@ contract Swap721 is ERC721Metadata {
     string memory name,
     string memory symbol,
     string memory unit,
+    string memory ctype,
     address oracle,
     address fixLegToken,
     address collateral)
   public ERC721Metadata(name, symbol) {
+    contractType = ctype;
     contractUnit = unit;
+
     _oracle = Oracle(oracle);
     _fixLegToken = IERC20(fixLegToken);
     _floatingLegCollateral = Collateral(collateral);
