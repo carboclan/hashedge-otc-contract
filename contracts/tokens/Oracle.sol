@@ -14,7 +14,7 @@ contract Oracle is WhitelistedRole {
 
   }
 
-  function setProfitOracle(uint64 _ts, uint64 _profit) public onlyWhitelisted {
+  function appendOracleData(uint64 _ts, uint64 _profit) public onlyWhitelisted {
     require(_ts > now - 72 * 3600 * 14 && _ts < now);
     require(_ts > _oracles[_oracles.length - 1].ts);
 
