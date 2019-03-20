@@ -1,8 +1,9 @@
 pragma solidity ^0.5.0;
 
+import "openzeppelin-solidity/contracts/access/roles/WhitelistedRole.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
-contract Collateral {
+contract Collateral is WhitelistedRole {
   IERC20 _underlying;
 
   struct info {
@@ -14,6 +15,16 @@ contract Collateral {
 
   constructor(address erc20Addr) public {
     _underlying = IERC20(erc20Addr);
+  }
+
+  function balanceOf(address owner) public view returns(uint256) {
+    return _accountInfo[owner].balance;
+  }
+
+  function pay(address from, address to, uint256 value) public onlyWhitelisted {
+    require(balanceOf(from) > value);
+    _accountInfo[from].balance -= value;
+    _underlying.transfer(to, value);
   }
 
   function deposit(uint256 value) public {
