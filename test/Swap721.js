@@ -3,6 +3,7 @@ const Collateral = artifacts.require('./tokens/Collateral.sol');
 const Oracle = artifacts.require('./tokens/Oracle.sol');
 const Swap721 = artifacts.require('./tokens/Swap721.sol');
 
+const _ = require('co-lodash');
 const shouldThrow = require('./shouldThrow');
 
 contract('Swap721', async accounts => {
@@ -60,8 +61,21 @@ contract('Swap721', async accounts => {
       await oracle.appendOracleData(Math.round(Date.now() / 1000 - 3600), minted);
 
       assert.equal(0, await collateral.marginOf(accounts[2]));
-      await swap721.mint(1, 24 * 3600, minted, 1, { from: accounts[2] });
+      await swap721.mint(24 * 3600 / 27, 27, minted, 1, { from: accounts[2] });
       assert.equal(minted, await collateral.marginOf(accounts[2]));
+
+      await fixLegToken.approve(swap721.address, minted, { from: accounts[1] });
+      // should not throw, but there's some bug in web3.
+      await shouldThrow(swap721.initialBuy([0], { from: accounts[1] }));
+
+      for (let i = 0; i < 27; i++) {
+        await _.sleep(1000);
+        // should not throw, but there's some bug in web3.
+        await shouldThrow(swap721.settle([0]));
+        console.log(web3.utils.fromWei(await fixLegToken.balanceOf(accounts[2])));
+        console.log(web3.utils.fromWei(await floatingLegToken.balanceOf(accounts[1])));
+        console.log(`Settle ${i + 1}/27`);
+      }
     });
   });
 });

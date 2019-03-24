@@ -49,7 +49,13 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
   }
 
   function mint(uint256 contractSize, uint64 duration, uint256 fixLegPayment, uint256 count) onlyWhitelisted public {
-    uint256 margin = contractSize * _oracle.computeProfit(uint64(now), uint64(now + 3600 * 24));
+    uint256 margin;
+    if (duration > 3600 * 24) {
+      margin = contractSize * _oracle.computeProfit(uint64(now), uint64(now + 3600 * 24));
+    } else {
+      margin = contractSize * _oracle.computeProfit(uint64(now), uint64(now) + duration);
+    }
+
     uint256 marginRequired = count * margin;
     require(_floatingLegCollateral.balanceOf(msg.sender) - _floatingLegCollateral.marginOf(msg.sender) >= marginRequired);
     _floatingLegCollateral.setMargin(msg.sender, marginRequired, 0);
@@ -58,6 +64,7 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     for (uint256 i = 0; i < count; i++) {
       uint256 id = _contracts.length;
       _contracts.push(c);
+      _mint(msg.sender, id);
       emit Minted(msg.sender, id);
     }
   }
@@ -65,12 +72,13 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
   function initialBuy(uint256[] memory ids) public {
     for (uint256 i = 0; i < ids.length; i++) {
       Contract storage c = _contracts[ids[i]];
-      require(ownerOf(ids[i]) == address(0) && c.startTime == 0);
+      require(c.startTime == 0);
 
       _fixLegToken.transferFrom(msg.sender, address(this), c.fixLegPayoutPerDay * c.endTime / 24 / 3600);
       c.startTime = uint64(now);
       c.endTime += uint64(now);
       c.lastSettleTime = uint64(now);
+      _transferFrom(ownerOf(ids[i]), msg.sender, ids[i]);
       emit Bought(msg.sender, ids[i]);
     }
   }
