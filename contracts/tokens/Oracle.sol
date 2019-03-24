@@ -16,7 +16,7 @@ contract Oracle is WhitelistedRole {
 
   function appendOracleData(uint64 _ts, uint64 _profit) public onlyWhitelisted {
     require(_ts > now - 72 * 3600 * 14 && _ts < now);
-    require(_ts > _oracles[_oracles.length - 1].ts);
+    require(_oracles.length == 0 || _ts > _oracles[_oracles.length - 1].ts);
 
     _oracles.push(OracleData(_ts, _profit));
   }
@@ -31,7 +31,7 @@ contract Oracle is WhitelistedRole {
       OracleData memory od = _oracles[d];
       if (od.ts > end) continue;
 
-      if (start == od.ts || d == 0) {
+      if (start >= od.ts || d == 0) {
         profit += od.profitPerDayPerUnit * (end - start) / 24 / 3600;
         break;
       } else {

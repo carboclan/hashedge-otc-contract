@@ -20,6 +20,7 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     uint64  startTime;
     uint64  endTime;
     uint64  lastSettleTime;
+    uint256 margin;
   }
 
   string public contractType;
@@ -48,7 +49,12 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
   }
 
   function mint(uint256 contractSize, uint64 duration, uint256 fixLegPayment, uint256 count) onlyWhitelisted public {
-    Contract memory c = Contract(false, msg.sender, contractSize, fixLegPayment * 3600 * 24 / duration, 0, duration, 0);
+    uint256 margin = contractSize * _oracle.computeProfit(uint64(now), uint64(now + 3600 * 24));
+    uint256 marginRequired = count * margin;
+    require(_floatingLegCollateral.balanceOf(msg.sender) - _floatingLegCollateral.marginOf(msg.sender) >= marginRequired);
+    _floatingLegCollateral.setMargin(msg.sender, marginRequired, 0);
+
+    Contract memory c = Contract(false, msg.sender, contractSize, fixLegPayment * 3600 * 24 / duration, 0, duration, 0, margin);
     for (uint256 i = 0; i < count; i++) {
       uint256 id = _contracts.length;
       _contracts.push(c);
@@ -83,12 +89,24 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
         // settle
         _floatingLegCollateral.pay(c.issuer, ownerOf(ids[i]), floatingLegPayout);
         _fixLegToken.transfer(c.issuer, c.fixLegPayoutPerDay * (settleTime - c.lastSettleTime) / 24 / 3600);
+
         c.lastSettleTime = settleTime;
+
+        if (settleTime < c.endTime) {
+          uint256 margin = c.contractSize * _oracle.computeProfit(uint64(now), uint64(now + 3600 * 24));
+          _floatingLegCollateral.setMargin(c.issuer, margin, c.margin);
+          c.margin = margin;
+        } else {
+          _floatingLegCollateral.setMargin(c.issuer, 0, c.margin);
+          c.margin = 0;
+        }
+
         emit Settled(ids[i]);
       } else {
         c.terminated = true;
         // refund
         _fixLegToken.transfer(ownerOf(ids[i]), c.fixLegPayoutPerDay * (c.endTime - c.lastSettleTime) / 24 / 3600);
+        _floatingLegCollateral.setMargin(c.issuer, 0, c.margin);
         emit Terminated(ids[i]);
       }
     }

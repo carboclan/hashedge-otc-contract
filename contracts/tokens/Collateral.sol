@@ -21,10 +21,20 @@ contract Collateral is WhitelistedRole {
     return _accountInfo[owner].balance;
   }
 
+  function marginOf(address owner) public view returns(uint256) {
+    return _accountInfo[owner].margin;
+  }
+
   function pay(address from, address to, uint256 value) public onlyWhitelisted {
     require(balanceOf(from) > value);
     _accountInfo[from].balance -= value;
     _underlying.transfer(to, value);
+  }
+
+  function setMargin(address who, uint256 add, uint256 sub) public onlyWhitelisted {
+    _accountInfo[who].margin += add;
+    require(_accountInfo[who].margin >= sub);
+    _accountInfo[who].margin -= sub;
   }
 
   function deposit(uint256 value) public {
