@@ -23,17 +23,17 @@ module.exports = async function(deployer) {
 
       const output = {
         erc20Tokens: {
-          [fixLegToken.address]: fixLegToken.abi,
-          [floatingLegToken.address]: floatingLegToken.abi
+          [fixLegToken.address.toLowerCase()]: fixLegToken.abi,
+          [floatingLegToken.address.toLowerCase()]: floatingLegToken.abi
         },
         collaterals: {
-          [collateral.address]: collateral.abi
+          [collateral.address.toLowerCase()]: collateral.abi
         },
         oracles: {
-          [oracle.address]: oracle.abi
+          [oracle.address.toLowerCase()]: oracle.abi
         },
         swap721Tokens: {
-          [swap721.address]: swap721.abi
+          [swap721.address.toLowerCase()]: swap721.abi
         }
       };
 

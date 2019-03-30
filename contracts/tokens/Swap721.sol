@@ -27,38 +27,38 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
   string public contractUnit;
   Contract[] _contracts;
 
-  Oracle _oracle;
-  IERC20 _fixLegToken;
-  Collateral _floatingLegCollateral;
+  Oracle public     oracle;
+  IERC20 public     fixLegToken;
+  Collateral public floatingLegCollateral;
 
   constructor(
     string memory name,
     string memory symbol,
     string memory unit,
     string memory ctype,
-    address oracle,
-    address fixLegToken,
-    address collateral)
+    address oracleAddr,
+    address fixLegTokenAddr,
+    address collateralAddr)
   public ERC721Metadata(name, symbol) {
     contractType = ctype;
     contractUnit = unit;
 
-    _oracle = Oracle(oracle);
-    _fixLegToken = IERC20(fixLegToken);
-    _floatingLegCollateral = Collateral(collateral);
+    oracle = Oracle(oracleAddr);
+    fixLegToken = IERC20(fixLegTokenAddr);
+    floatingLegCollateral = Collateral(collateralAddr);
   }
 
   function mint(uint256 contractSize, uint64 duration, uint256 fixLegPayment, uint256 count) onlyWhitelisted public {
     uint256 margin;
     if (duration > 3600 * 24) {
-      margin = contractSize * _oracle.computeProfit(uint64(now), uint64(now + 3600 * 24));
+      margin = contractSize * oracle.computeProfit(uint64(now), uint64(now + 3600 * 24));
     } else {
-      margin = contractSize * _oracle.computeProfit(uint64(now), uint64(now) + duration);
+      margin = contractSize * oracle.computeProfit(uint64(now), uint64(now) + duration);
     }
 
     uint256 marginRequired = count * margin;
-    require(_floatingLegCollateral.balanceOf(msg.sender) - _floatingLegCollateral.marginOf(msg.sender) >= marginRequired);
-    _floatingLegCollateral.setMargin(msg.sender, marginRequired, 0);
+    require(floatingLegCollateral.balanceOf(msg.sender) - floatingLegCollateral.marginOf(msg.sender) >= marginRequired);
+    floatingLegCollateral.setMargin(msg.sender, marginRequired, 0);
 
     Contract memory c = Contract(false, msg.sender, contractSize, fixLegPayment * 3600 * 24 / duration, 0, duration, 0, margin);
     for (uint256 i = 0; i < count; i++) {
@@ -74,7 +74,7 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
       Contract storage c = _contracts[ids[i]];
       require(c.startTime == 0);
 
-      _fixLegToken.transferFrom(msg.sender, address(this), c.fixLegPayoutPerDay * c.endTime / 24 / 3600);
+      fixLegToken.transferFrom(msg.sender, address(this), c.fixLegPayoutPerDay * c.endTime / 24 / 3600);
       c.startTime = uint64(now);
       c.endTime += uint64(now);
       c.lastSettleTime = uint64(now);
@@ -91,21 +91,21 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
 
       uint64 settleTime = uint64(now);
       if (settleTime > c.endTime) settleTime = c.endTime;
-      uint256 floatingLegPayout = _oracle.computeProfit(c.lastSettleTime, settleTime) * c.contractSize;
+      uint256 floatingLegPayout = oracle.computeProfit(c.lastSettleTime, settleTime) * c.contractSize;
 
-      if (_floatingLegCollateral.balanceOf(c.issuer) > floatingLegPayout) {
+      if (floatingLegCollateral.balanceOf(c.issuer) > floatingLegPayout) {
         // settle
-        _floatingLegCollateral.pay(c.issuer, ownerOf(ids[i]), floatingLegPayout);
-        _fixLegToken.transfer(c.issuer, c.fixLegPayoutPerDay * (settleTime - c.lastSettleTime) / 24 / 3600);
+        floatingLegCollateral.pay(c.issuer, ownerOf(ids[i]), floatingLegPayout);
+        fixLegToken.transfer(c.issuer, c.fixLegPayoutPerDay * (settleTime - c.lastSettleTime) / 24 / 3600);
 
         c.lastSettleTime = settleTime;
 
         if (settleTime < c.endTime) {
-          uint256 margin = c.contractSize * _oracle.computeProfit(uint64(now), uint64(now + 3600 * 24));
-          _floatingLegCollateral.setMargin(c.issuer, margin, c.margin);
+          uint256 margin = c.contractSize * oracle.computeProfit(uint64(now), uint64(now + 3600 * 24));
+          floatingLegCollateral.setMargin(c.issuer, margin, c.margin);
           c.margin = margin;
         } else {
-          _floatingLegCollateral.setMargin(c.issuer, 0, c.margin);
+          floatingLegCollateral.setMargin(c.issuer, 0, c.margin);
           c.margin = 0;
         }
 
@@ -113,8 +113,8 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
       } else {
         c.terminated = true;
         // refund
-        _fixLegToken.transfer(ownerOf(ids[i]), c.fixLegPayoutPerDay * (c.endTime - c.lastSettleTime) / 24 / 3600);
-        _floatingLegCollateral.setMargin(c.issuer, 0, c.margin);
+        fixLegToken.transfer(ownerOf(ids[i]), c.fixLegPayoutPerDay * (c.endTime - c.lastSettleTime) / 24 / 3600);
+        floatingLegCollateral.setMargin(c.issuer, 0, c.margin);
         emit Terminated(ids[i]);
       }
     }

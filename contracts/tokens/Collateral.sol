@@ -4,7 +4,7 @@ import "openzeppelin-solidity/contracts/access/roles/WhitelistedRole.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
 contract Collateral is WhitelistedRole {
-  IERC20 _underlying;
+  IERC20 public underlying;
 
   struct info {
     uint256 balance;
@@ -14,7 +14,7 @@ contract Collateral is WhitelistedRole {
   mapping(address => info) _accountInfo;
 
   constructor(address erc20Addr) public {
-    _underlying = IERC20(erc20Addr);
+    underlying = IERC20(erc20Addr);
   }
 
   function balanceOf(address owner) public view returns(uint256) {
@@ -28,7 +28,7 @@ contract Collateral is WhitelistedRole {
   function pay(address from, address to, uint256 value) public onlyWhitelisted {
     require(balanceOf(from) > value);
     _accountInfo[from].balance -= value;
-    _underlying.transfer(to, value);
+    underlying.transfer(to, value);
   }
 
   function setMargin(address who, uint256 add, uint256 sub) public onlyWhitelisted {
@@ -38,7 +38,7 @@ contract Collateral is WhitelistedRole {
   }
 
   function deposit(uint256 value) public {
-    _underlying.transferFrom(msg.sender, address(this), value);
+    underlying.transferFrom(msg.sender, address(this), value);
     _accountInfo[msg.sender].balance += value;
   }
 
@@ -47,6 +47,6 @@ contract Collateral is WhitelistedRole {
     require(value <= inf.balance - inf.margin);
 
     inf.balance -= value;
-    _underlying.transfer(msg.sender, value);
+    underlying.transfer(msg.sender, value);
   }
 }
