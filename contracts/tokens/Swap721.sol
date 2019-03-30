@@ -48,6 +48,27 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     floatingLegCollateral = Collateral(collateralAddr);
   }
 
+  function getTokenDetail(uint256 tokenId) public view returns(
+    bool    terminated,
+    address issuer,
+    uint256 contractSize,
+    uint256 fixLegPayoutPerDay,
+    uint64  startTime,
+    uint64  endTime,
+    uint64  lastSettleTime,
+    uint256 margin
+  ) {
+    Contract memory c = _contracts[tokenId];
+    terminated = c.terminated;
+    issuer = c.issuer;
+    contractSize = c.contractSize;
+    fixLegPayoutPerDay = c.fixLegPayoutPerDay;
+    startTime = c.startTime;
+    endTime = c.endTime;
+    lastSettleTime = c.lastSettleTime;
+    margin = c.margin;
+  }
+
   function mint(uint256 contractSize, uint64 duration, uint256 fixLegPayment, uint256 count) onlyWhitelisted public {
     uint256 margin;
     if (duration > 3600 * 24) {
