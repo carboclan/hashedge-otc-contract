@@ -20,7 +20,15 @@ files.forEach(f => {
   }
 });
 
-require('./lib/db').init().then(() => {
+const Web3Wallet = require('web3-wallet');
+
+const wallet = Web3Wallet.wallet.generate();
+const web3 = Web3Wallet.create(wallet, process.env.URL || 'http://localhost:9545');
+
+const contracts = require('./lib/contracts')(web3, require('./build/abi.json'));
+const events = require('./lib/events');
+
+events.listen(web3, contracts).then(() => {
   console.log('App is listening on 3000.');
   app.listen(3000);
 });
