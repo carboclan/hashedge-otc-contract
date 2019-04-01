@@ -21,6 +21,8 @@ module.exports = async function(deployer) {
       await deployer.deploy(Swap721, 'SWAP TEST', 'SWT', 'TH/s', 'PoW', oracle.address, fixLegToken.address, collateral.address);
       const swap721 = await Swap721.deployed();
 
+      await collateral.addWhitelisted(swap721.address);
+
       const output = {
         erc20Tokens: {
           [fixLegToken.address.toLowerCase()]: fixLegToken.abi,

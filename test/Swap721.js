@@ -18,8 +18,8 @@ contract('Swap721', async accounts => {
 
     swap721 = await Swap721.new('SWAP TEST', 'SWT', 'TH/s', 'PoW', oracle.address, fixLegToken.address, collateral.address);
     await collateral.addWhitelisted(swap721.address);
-    await oracle.addWhitelisted(accounts[0]);
 
+    await oracle.addWhitelisted(accounts[0]);
     await swap721.addWhitelisted(accounts[2]);
   }
 
