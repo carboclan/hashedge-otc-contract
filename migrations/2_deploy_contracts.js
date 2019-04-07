@@ -3,7 +3,7 @@ const Collateral = artifacts.require('./tokens/Collateral.sol');
 const Oracle = artifacts.require('./tokens/Oracle.sol');
 const Swap721 = artifacts.require('./tokens/Swap721.sol');
 
-module.exports = async function(deployer) {
+module.exports = async function(deployer, network, accounts) {
   deployer.then(async () => {
     if (process.env.PROD !== true) {
       await deployer.deploy(ERC20, 'DAI', 'DAI');
@@ -33,13 +33,13 @@ module.exports = async function(deployer) {
       await btcCollateral.addWhitelisted(btcSwap721.address);
       await ethCollateral.addWhitelisted(ethSwap721.address);
 
-      await oracle.addWhitelisted('0xde8fc290a265c78d4cfd1c509241dae22687193e');
-      await btcSwap721.addWhitelisted('0xde8fc290a265c78d4cfd1c509241dae22687193e');
-      await ethSwap721.addWhitelisted('0xde8fc290a265c78d4cfd1c509241dae22687193e');
+      await oracle.addWhitelisted(accounts[0]);
+      await btcSwap721.addWhitelisted(accounts[0]);
+      await ethSwap721.addWhitelisted(accounts[0]);
 
-      await dai.mint('0xde8fc290a265c78d4cfd1c509241dae22687193e', 1e19.toString());
-      await wbtc.mint('0xde8fc290a265c78d4cfd1c509241dae22687193e', 1e19.toString());
-      await weth.mint('0xde8fc290a265c78d4cfd1c509241dae22687193e', 1e19.toString());
+      await dai.mint(accounts[0], 1e19.toString());
+      await wbtc.mint(accounts[0], 1e19.toString());
+      await weth.mint(accounts[0], 1e19.toString());
 
       await oracle.appendOracleData(Math.round(Date.now() / 1000 - 3600 * 24), 1e18.toString());
       await oracle.appendOracleData(Math.round(Date.now() / 1000 - 3600), 1e18.toString());
