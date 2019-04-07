@@ -9,7 +9,7 @@ import "./Collateral.sol";
 contract Swap721 is ERC721Metadata, WhitelistedRole {
   event Minted(address issuer, uint256 tokenId);
   event Bought(address buyer, uint256 tokenId);
-  event Settled(uint256 tokenId);
+  event Settled(uint256 tokenId, uint256 fixLegPayout, uint256 floatingLegPayout);
   event Terminated(uint256 tokenId);
 
   struct Contract {
@@ -21,6 +21,8 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     uint64  endTime;
     uint64  lastSettleTime;
     uint256 margin;
+    uint256 totalFixLegPaid;
+    uint256 totalFloatingLegPaid;
   }
 
   string public contractType;
@@ -56,7 +58,9 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     uint64  startTime,
     uint64  endTime,
     uint64  lastSettleTime,
-    uint256 margin
+    uint256 margin,
+    uint256 totalFixLegPaid,
+    uint256 totalFloatingLegPaid
   ) {
     Contract memory c = _contracts[tokenId];
     terminated = c.terminated;
@@ -67,6 +71,8 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     endTime = c.endTime;
     lastSettleTime = c.lastSettleTime;
     margin = c.margin;
+    totalFixLegPaid = c.totalFixLegPaid;
+    totalFloatingLegPaid = c.totalFloatingLegPaid;
   }
 
   function mint(uint256 contractSize, uint64 duration, uint256 fixLegPayment, uint256 count) onlyWhitelisted public {
@@ -81,7 +87,7 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     require(floatingLegCollateral.balanceOf(msg.sender) - floatingLegCollateral.marginOf(msg.sender) >= marginRequired);
     floatingLegCollateral.setMargin(msg.sender, marginRequired, 0);
 
-    Contract memory c = Contract(false, msg.sender, contractSize, fixLegPayment * 3600 * 24 / duration, 0, duration, 0, margin);
+    Contract memory c = Contract(false, msg.sender, contractSize, fixLegPayment * 3600 * 24 / duration, 0, duration, 0, margin, 0, 0);
     for (uint256 i = 0; i < count; i++) {
       uint256 id = _contracts.length;
       _contracts.push(c);
@@ -117,8 +123,12 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
       if (floatingLegCollateral.balanceOf(c.issuer) > floatingLegPayout) {
         // settle
         floatingLegCollateral.pay(c.issuer, ownerOf(ids[i]), floatingLegPayout);
-        fixLegToken.transfer(c.issuer, c.fixLegPayoutPerDay * (settleTime - c.lastSettleTime) / 24 / 3600);
 
+        uint256 fixLegPayout = c.fixLegPayoutPerDay * (settleTime - c.lastSettleTime) / 24 / 3600;
+        fixLegToken.transfer(c.issuer, fixLegPayout);
+
+        c.totalFixLegPaid += fixLegPayout;
+        c.totalFloatingLegPaid += floatingLegPayout;
         c.lastSettleTime = settleTime;
 
         if (settleTime < c.endTime) {
@@ -130,7 +140,7 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
           c.margin = 0;
         }
 
-        emit Settled(ids[i]);
+        emit Settled(ids[i], fixLegPayout, floatingLegPayout);
       } else {
         c.terminated = true;
         // refund
