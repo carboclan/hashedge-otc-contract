@@ -61,7 +61,8 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     uint64  lastSettleTime,
     uint256 margin,
     uint256 totalFixLegPaid,
-    uint256 totalFloatingLegPaid
+    uint256 totalFloatingLegPaid,
+    uint256 price
   ) {
     Contract memory c = _contracts[tokenId];
     terminated = c.terminated;
@@ -74,6 +75,7 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
     margin = c.margin;
     totalFixLegPaid = c.totalFixLegPaid;
     totalFloatingLegPaid = c.totalFloatingLegPaid;
+    price = c.fixLegPayoutPerDay * (c.endTime - c.startTime) / 24 / 3600;
   }
 
   function mint(uint256 contractSize, uint64 duration, uint256 fixLegPayment, uint256 count) onlyWhitelisted public {
