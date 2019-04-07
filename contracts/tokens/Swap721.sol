@@ -10,6 +10,7 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
   event Minted(address issuer, uint256 tokenId);
   event Bought(address buyer, uint256 tokenId);
   event Settled(uint256 tokenId, uint256 fixLegPayout, uint256 floatingLegPayout);
+  event Canceled(uint256 tokenId);
   event Terminated(uint256 tokenId);
 
   struct Contract {
@@ -107,6 +108,16 @@ contract Swap721 is ERC721Metadata, WhitelistedRole {
       c.lastSettleTime = uint64(now);
       _transferFrom(ownerOf(ids[i]), msg.sender, ids[i]);
       emit Bought(msg.sender, ids[i]);
+    }
+  }
+
+  function cancel(uint256[] memory ids) public {
+    for (uint256 i = 0; i < ids.length; i++) {
+      Contract storage c = _contracts[ids[i]];
+      require(c.startTime == 0);
+
+      c.terminated = true;
+      emit Canceled(ids[i]);
     }
   }
 
