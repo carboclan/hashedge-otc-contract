@@ -28,7 +28,18 @@ const web3 = Web3Wallet.create(wallet, process.env.URL || 'http://localhost:9545
 const contracts = require('./lib/contracts')(web3, require('./build/abi.json'));
 const events = require('./lib/events');
 
-events.listen(web3, contracts).then(() => {
+(async () => {
+  await events.listen(web3, contracts);
+
+  for (const swap721 of Object.values(contracts.swap721Tokens)) {
+    swap721.name = await swap721.name();
+    swap721.symbol = await swap721.symbol();
+    swap721.contractType = await swap721.contractType();
+    swap721.contractUnit = await swap721.contractUnit();
+  }
+
+  global.contracts = contracts;
+
   console.log('App is listening on 3000.');
   app.listen(3000);
-});
+})().catch(console.error);
