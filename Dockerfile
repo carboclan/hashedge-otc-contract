@@ -6,4 +6,5 @@ RUN cd /app && npm i
 
 COPY * /app/
 
+WORKDIR /app
 ENTRYPOINT node
