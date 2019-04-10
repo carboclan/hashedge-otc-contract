@@ -13,7 +13,7 @@ files.forEach(f => {
 
     ['get', 'post', 'delete', 'put', 'all'].forEach(method => {
       module[method] && Object.keys(module[method]).forEach(fn => {
-        const path = '/' + f.replace(/.js$/g, '') + '/' + fn;
+        const path = '/api/' + f.replace(/.js$/g, '') + '/' + fn;
         app.use(route[method](path, module[method][fn]));
       })
     });
