@@ -22,18 +22,23 @@ module.exports = async function(deployer, network, accounts) {
       const ethCollateral = await Collateral.deployed();
 
       await deployer.deploy(Oracle);
-      const oracle = await Oracle.deployed();
+      const oracleBtc = await Oracle.deployed();
 
-      await deployer.deploy(Swap721, 'BTC-POW', 'BTC-POW', 'TH/s', 'PoW', oracle.address, dai.address, btcCollateral.address);
+      await deployer.deploy(Oracle);
+      const oracleEth = await Oracle.deployed();
+
+      await deployer.deploy(Swap721, 'BTC-POW', 'BTC-POW', 'TH/s', 'PoW', oracleBtc.address, dai.address, btcCollateral.address);
       const btcSwap721 = await Swap721.deployed();
 
-      await deployer.deploy(Swap721, 'ETH-POW', 'ETH-POW', 'GH/s', 'PoW', oracle.address, dai.address, ethCollateral.address);
+      await deployer.deploy(Swap721, 'ETH-POW', 'ETH-POW', 'GH/s', 'PoW', oracleEth.address, dai.address, ethCollateral.address);
       const ethSwap721 = await Swap721.deployed();
 
       await btcCollateral.addWhitelisted(btcSwap721.address);
       await ethCollateral.addWhitelisted(ethSwap721.address);
 
-      await oracle.addWhitelisted(accounts[0]);
+      await oracleBtc.addWhitelisted(accounts[0]);
+      await oracleEth.addWhitelisted(accounts[0]);
+
       await btcSwap721.addWhitelisted(accounts[0]);
       await ethSwap721.addWhitelisted(accounts[0]);
 
@@ -41,8 +46,8 @@ module.exports = async function(deployer, network, accounts) {
       await wbtc.mint(accounts[0], 1e19.toString());
       await weth.mint(accounts[0], 1e19.toString());
 
-      await oracle.appendOracleData(Math.round(Date.now() / 1000 - 3600 * 24), 1e18.toString());
-      await oracle.appendOracleData(Math.round(Date.now() / 1000 - 3600), 1e18.toString());
+      await oracleBtc.appendOracleData(Math.round(Date.now() / 1000 - 3600 * 24), (0.00003970 * 1e18).toString());
+      await oracleEth.appendOracleData(Math.round(Date.now() / 1000 - 3600 * 24), ( 0.00008914  * 1e18).toString());
 
       await wbtc.approve(btcCollateral.address, 2e18.toString());
       await btcCollateral.deposit(2e18.toString());
@@ -67,7 +72,8 @@ module.exports = async function(deployer, network, accounts) {
           [ethCollateral.address.toLowerCase()]: ethCollateral.abi
         },
         oracles: {
-          [oracle.address.toLowerCase()]: oracle.abi
+          [oracleBtc.address.toLowerCase()]: oracleBtc.abi,
+          [oracleEth.address.toLowerCase()]: oracleEth.abi
         },
         swap721Tokens: {
           [btcSwap721.address.toLowerCase()]: btcSwap721.abi,
