@@ -4,6 +4,8 @@ package-lock.json
 build
 data
 
+contract-wrapper/lib
+
 # Logs
 logs
 *.log

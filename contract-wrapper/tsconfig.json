@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "pretty": true,
+    "target": "es5",
+    "lib": ["es2017", "dom"],
+    "outDir": "lib",
+    "rootDir": ".",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["./src/**/*"]
+}
