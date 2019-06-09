@@ -1,8 +1,8 @@
 {
-  "name": "hashedge-contracts",
+  "name": "@hashedge/contract-wrapper",
   "version": "0.0.1",
   "description": "lib for js to call hashedge-contracts",
-  "main": "index.js",
+  "main": "lib/src/index.js",
   "scripts": {
     "build": "npm run generate_contract_wrappers && tsc -b",
     "generate_contract_wrappers": "abi-gen --abis ../build/contracts/**/*.json --template node_modules/@0x/abi-gen-templates/contract.handlebars --partials 'node_modules/@0x/abi-gen-templates/partials/**/*.handlebars' --output src/generated-wrappers --backend ethers"
@@ -25,6 +25,7 @@
     "@0x/abi-gen-templates": "^2.1.0"
   },
   "dependencies": {
-    "@0x/base-contract": "^5.1.0"
+    "@0x/base-contract": "^5.1.0",
+    "lodash": "*"
   }
 }
