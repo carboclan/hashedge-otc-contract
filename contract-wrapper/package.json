@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "lib for js to call hashedge-contracts",
   "main": "lib/src/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "npm run generate_contract_wrappers && tsc -b",
     "generate_contract_wrappers": "abi-gen --abis ../build/contracts/**/*.json --template node_modules/@0x/abi-gen-templates/contract.handlebars --partials 'node_modules/@0x/abi-gen-templates/partials/**/*.handlebars' --output src/generated-wrappers --backend ethers"
