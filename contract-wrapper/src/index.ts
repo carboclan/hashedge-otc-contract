@@ -1,4 +1,4 @@
-import _ from 'lodash';
+const _ = require('lodash');
 import { CollateralContract, CollateralEvents } from './generated-wrappers/collateral';
 import { OracleContract, OracleEvents } from './generated-wrappers/oracle';
 import { Swap721Contract, Swap721Events } from './generated-wrappers/swap721';
