@@ -1,6 +1,6 @@
 {
   "name": "@hashedge/contract-wrapper",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "lib for js to call hashedge-contracts",
   "main": "lib/src/index.js",
   "publishConfig": {
@@ -24,11 +24,11 @@
   },
   "homepage": "https://github.com/carboclan/hashedge-pro-contract#readme",
   "devDependencies": {
-    "@0x/abi-gen": "^2.0.10",
-    "@0x/abi-gen-templates": "^2.1.0"
+    "@0x/abi-gen": "^4.1.1",
+    "@0x/abi-gen-templates": "^2.4.2"
   },
   "dependencies": {
-    "@0x/base-contract": "^5.1.0",
+    "@0x/base-contract": "^5.3.2",
     "lodash": "*"
   }
 }
